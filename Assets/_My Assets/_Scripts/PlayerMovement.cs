@@ -12,12 +12,26 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private Vector2 minMaxTargetSpeed;
     [SerializeField] private float rotationSmoothness;
 
+    [SerializeField] private Quaternion offsetRotation;
+
     float targetSpeed;
     float speed;
 
     private void Update()
     {
-        speed = inputManager.GetForwarMovementInput();
+        if (inputManager.GetForwardMovementInput() != 0)
+        {
+            speed = Mathf.Abs(inputManager.GetForwardMovementInput());
+        }
+        else if (inputManager.GetSideMovementInput() != 0)
+        {
+            speed = Mathf.Abs(inputManager.GetSideMovementInput());
+            
+        }
+        else
+        {
+            speed = 0;
+        }
 
         targetSpeed = Mathf.MoveTowards(targetSpeed, speed, AdjusedtPickUpSpeed() * Time.deltaTime);
         playerAnimator.SetFloat("Walk", targetSpeed);
@@ -27,7 +41,7 @@ public class PlayerMovement : MonoBehaviour
 
     private float AdjusedtPickUpSpeed()
     {
-        if (inputManager.GetForwarMovementInput() < 1)
+        if (inputManager.GetForwardMovementInput() < 1)
             return minMaxTargetSpeed.x;
         else
             return minMaxTargetSpeed.y;
@@ -40,8 +54,8 @@ public class PlayerMovement : MonoBehaviour
             transform.rotation = Quaternion.Lerp
             (
                 transform.rotation, 
-                cameraTransform.rotation,
-                AdjusedtPickUpSpeed() * rotationSmoothness * Time.deltaTime
+                cameraTransform.rotation * inputManager.GetOffsetRotation(),
+                rotationSmoothness * Time.deltaTime
             );
         }
     }
